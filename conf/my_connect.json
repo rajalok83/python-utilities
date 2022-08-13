@@ -1,0 +1,17 @@
+{
+    "cassandra": {
+        "cqlsh":{
+            "pwd": {
+                "id": "pwd"
+            }
+        }
+    },
+    "mail": {
+        "name": [],
+        "email": [],
+        "host": "",
+        "port": 9092,
+        "myemail": "myemail@domain.com"
+    },
+    "encryption_key": "mykey"
+}

@@ -1,0 +1,40 @@
+{
+  "app":{
+    "APP01":{
+		"Test":{
+			"server": [
+				"LPAR1",
+				"LPAR2"
+			],
+			"id": {"personal-id": "personal-id"}
+		},
+		"QA":{
+			"server": [
+				"LPAR1",
+				"LPAR2"
+			],
+			"id": {"personal-id": "personal-id", "otherid": "otherid"}
+		}, 
+		"UATV":{
+			"server": [
+				"LPAR1",
+				"LPAR2"
+			],
+			"id": {"personal-id": "personal-id", "otherid": "otherid"}
+		},
+		"PROD":{
+			"server": [
+				"LPAR1",
+				"LPAR2"
+			],
+		"id": {"personal-id": "personal-id", "otherid": "otherid"}
+		}
+	},
+    "APP02":["Test", "QA", "UATV", "PROD"],
+    "APP03":["Test", "QA", "UATV", "PROD"]
+  },
+  "servers": {
+	  "LPAR1": "LPAR1.DNS.NET",
+	  "LPAR2": "LPAR2.DNS.NET"
+  }
+}

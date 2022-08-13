@@ -1,0 +1,113 @@
+{
+    "cassandra": {
+        "home_path": "I:\\Cassandra\\apache-cassandra-3.11.3",
+        "personal-conf-file": "I:\\Cassandra\\PythonCoudDB2\\conf\\my_connect.json",
+        "api": {
+            "api-cert-path": ""
+        },
+        "pricing-per-month": {
+            "nodeType": {
+                "MICRO": {
+                    "prod": 336,
+                    "non-prod": 264,
+                    "limits": {
+                        "storage": 800,
+                        "storage-unit": "GB"
+                    }
+                },
+                "SMALL": {
+                    "prod": 672,
+                    "non-prod": 528,
+                    "limits": {
+                        "storage": 1.6,
+                        "storage-unit": "TB"
+                    }
+                },
+                "MEDIUM": {
+                    "prod": 1344,
+                    "non-prod": 1056,
+                    "limits": {
+                        "storage": 3.2,
+                        "storage-unit": "TB"
+                    }
+                }
+            },
+            "storageType": {
+                "LVM": 2
+            }
+        },
+        "cqlsh":{
+            "connect-parm": {
+                "dev-qa": {
+                    "clusters": {
+                        "clusterid-clustername": {
+                            "info": {
+                                "NodeType": "MICRO|SMALL|MEDIUM",
+                                "StorageType": "LVM",
+                                "SealID": 11111,
+                                "DeploymentID": 11111,
+                                "CostCenter": 11111,
+                                "Nodes": 0
+                            }, 
+                            "nodes": [
+                                "ip-DC-Seed|Non_Seed"
+                            ]
+                        }
+                    }
+                },
+                "uatv": {
+                    "clusters": {
+                        "clusterid-clustername": {
+                            "info": {
+                                "NodeType": "MICRO|SMALL|MEDIUM",
+                                "StorageType": "LVM",
+                                "SealID": 11111,
+                                "DeploymentID": 11111,
+                                "CostCenter": 11111,
+                                "Nodes": 0
+                            }, 
+                            "nodes": [
+                                "ip-DC-Seed|Non_Seed"
+                            ]
+                        }
+                    }
+                },
+                "perf": {
+                    "clusters": {
+                        "clusterid-clustername": {
+                            "info": {
+                                "NodeType": "MICRO|SMALL|MEDIUM",
+                                "StorageType": "LVM",
+                                "SealID": 11111,
+                                "DeploymentID": 11111,
+                                "CostCenter": 11111,
+                                "Nodes": 0
+                            }, 
+                            "nodes": [
+                                "ip-DC-Seed|Non_Seed"
+                            ]
+                        }
+                    }
+                },
+                "prod": {
+                    "clusters": {
+                        "clusterid-clustername": {
+                            "info": {
+                                "NodeType": "MICRO|SMALL|MEDIUM",
+                                "StorageType": "LVM",
+                                "SealID": 11111,
+                                "DeploymentID": 11111,
+                                "CostCenter": 11111,
+                                "Nodes": 0
+                            }, 
+                            "nodes": [
+                                "ip-DC-Seed|Non_Seed"
+                            ]
+                        }
+                    }
+                }
+            },
+            "title-prefix": "CQLSH-"
+        }
+    }
+}

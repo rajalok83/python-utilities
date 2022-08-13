@@ -1,0 +1,12 @@
+[connection]
+ssl=true
+[ssl]
+VALIDATE=false
+VERSION=TLSv1_2
+CERTFILE=CONF_DIR\entrust_certificate.cer
+[ui]
+float_precision=10
+double_precision=10
+colors=on
+[csv]
+field_size_limit=1000000000
