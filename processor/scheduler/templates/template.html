@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Template Definition{% endblock %}
+{% block content %}
+
+<h3 class="prcs-header">
+  <table class="table table-striped" border="1">
+    <thead class="table-primary">
+      <tr>
+        <th scope="col">Templates</th>
+      </tr>
+    </thead>
+  </table>
+</h3>
+<table class="table table-striped" border="1">
+  <thead class="table-primary">
+    <tr>
+      <th scope="col">Template Name</th>
+      <th scope="col">Product Vendor</th>
+      <th scope="col">Product Type</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Product Version</th>
+      <th scope="col">Template Definition</th>
+      <td><button type="button" class="btn btn-primary"
+          onclick='edit_template(null, null, null, null, null, null, null)' data-bs-toggle="modal"
+          data-bs-target="#editTemplateModal"><i class="fa-solid fa-plus"></i></button></td>
+    </tr>
+  </thead>
+  {% for k,v in list.items %}
+  <tr scope="row">
+    <td>{{ v.nm }}</td>
+    <td>{{ v.vndr_nm }}</td>
+    <td>{{ v.prdct_typ }}</td>
+    <td>{{ v.prdct_nm }}</td>
+    <td>{{ v.prdct_ver }}</td>
+    <td>{{ v.text }}</td>
+    <td>
+      <button type="button" class="btn btn-success" onclick='edit_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
+           "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")' data-bs-toggle="modal"
+        data-bs-target="#editTemplateModal"><i class="fa-solid fa-play"></i></button>
+      <button type="button" class="btn btn-warning" onclick='edit_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
+     "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")' data-bs-toggle="modal"
+        data-bs-target="#editTemplateModal"><i class="fa-solid fa-pen-to-square"></i></button>
+      <button type="button" class="btn btn-danger" onclick='delete_template("{{ k }}", "{{ v.nm }}")'
+        data-bs-toggle="modal" data-bs-target="#confirmTemplateModal"><i class="fa-solid fa-trash-can"></i></button>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="editTemplateModal" tabindex="-1" aria-labelledby="editTemplateModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTemplateModalLabel">Edit Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form">
+          {% csrf_token %}
+          <input class="form-control" id="id_input_id" style="display:none" />
+          <label for="id_input_nm">Template Name</label>
+          <input class="form-control" id="id_input_nm" required />
+          <label for="id_input_vndr_nm">Vendor Name</label>
+          <input class="form-control" id="id_input_vndr_nm" required />
+          <label for="id_input_prdct_typ">Product Type</label>
+          <input class="form-control" id="id_input_prdct_typ" required />
+          <label for="id_input_prdct_nm">Product Name</label>
+          <input type="text" class="form-control" id="id_input_prdct_nm" required />
+          <label for="id_input_prdct_vrsn">Product Version</label>
+          <input class="form-control" id="id_input_prdct_vrsn" required />
+          <label for="id_textarea_tmplt_txt">Template Text</label>
+          <textarea class="form-control" id="id_textarea_tmplt_txt" required></textarea>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" id="id_button_save" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="confirmTemplateModal" tabindex="-1" aria-labelledby="confirmTemplateModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmTemplateModalLabel">Confirm Template Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form">
+          {% csrf_token %}
+          <input class="form-control" id="id_confirm_input_id" style="display:none" />
+          <label for="id_confirm_input_nm">Template Name</label>
+          <input class="form-control" id="id_confirm_input_nm" required readonly />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" id="id_confirm_button_save" class="btn btn-primary">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

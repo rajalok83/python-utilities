@@ -4,6 +4,19 @@ from django.db import models
 # Create your models here.
 
 
+class SchedulerConnectConfig(models.Model):
+  class Meta:
+    unique_together = (('vndr_nm', 'prdct_typ', 'prdct_nm', 'prdct_ver'))
+  vndr_nm = models.CharField(max_length=30)
+  prdct_typ = models.CharField(max_length=30)
+  prdct_nm = models.CharField(max_length=30)
+  prdct_ver = models.CharField(max_length=30)
+  cnnct_dir = models.CharField(max_length=3200)
+  cnnct_strng = models.CharField(max_length=3200)
+  crt_ts = models.DateTimeField('date created', default=datetime.now())
+  updt_ts = models.DateTimeField('date updated', default=datetime.now())
+
+
 class SchedulerProcess(models.Model):
   pid = models.BigIntegerField(unique=True)
   uid = models.CharField(max_length=80, primary_key=True)
@@ -26,7 +39,7 @@ class DBTyp(models.Model):
 class SchedulerLoad(models.Model):
   uid = models.CharField(max_length=80, unique=True)
   prnt_uid = models.CharField(max_length=80)
-  pid = models.BigIntegerField(default=-9999)
+  pid = models.CharField(default="", max_length=10)
   user_data = models.CharField(default='', max_length=3200)
   prirty = models.BigIntegerField(default=-9999)
   file_pth = models.CharField(max_length=3200)

@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import subprocess
 from time import sleep
 import traceback
@@ -49,25 +50,28 @@ class RunPerMin:
               print('CPROC:Error->{}->{}'.format(cproc.pid, str(line.rstrip())))
       except psutil.NoSuchProcess:
         proc_uid = proc.args.split(' ')[1]
-        self.updt_proc_status(proc_uid, 99999, 'Completed')
+        print(proc_uid)
+        self.updt_proc_status(proc_uid, 'N/A', 'Completed')
         self.all_active_proc.remove(proc)
         out_file = '{}{}{}'.format(self.tempdir, os.path.sep, proc_uid)
         with open('{}.log'.format(out_file), 'r') as log_file:
           log_data = log_file.readlines()
-          print("Log File --------------{}-------------".format(proc_uid))
-          print(log_data)
+          # print("Log File --------------{}-------------".format(proc_uid))
+          # print(log_data)
           # log_file.seek(0)
-          print(len(log_data))
-          if log_data[-1:][0].find("{} successful".format(proc_uid)) > -1:
-            self.updt_proc_status(proc_uid, 99999, 'Successful')
-
+          # print(len(log_data))
+          joined_log_data = ("\n").join(log_data).upper()
+          if joined_log_data.find("ERROR".format(proc_uid)) > -1:
+            self.updt_proc_status(proc_uid, 'N/A', 'Completed - Error')
+          elif joined_log_data.find("{} SUCCESSFUL".format(proc_uid)) > -1:
+            self.updt_proc_status(proc_uid, 'N/A', 'Successful')
           else:
             with open('{}.err'.format(out_file), 'r') as err_file:
               err_data = err_file.readlines()
-              print("Err File --------------{}-------------".format(proc_uid))
-              print(err_data)
+              # print("Err File --------------{}-------------".format(proc_uid))
+              # print(err_data)
               if (len(err_data) > 0):
-                self.updt_proc_status(proc_uid, 99999, 'Failed')
+                self.updt_proc_status(proc_uid, 'N/A', 'Failed')
               err_file.close()
           log_file.close()
 
@@ -124,18 +128,22 @@ class RunPerMin:
         return
 
   def __init__(self, in_argv, in_run_end_typ, in_runs_per_min, in_data) -> None:
+    # smo.SchedulerLoad.objects.all().delete()
     self.all_arg = in_argv
+    print(self.all_arg)
+    in_tmplt = json.loads(self.all_arg[3])
     self.tempdir = self.tempdir + os.path.sep + self.all_arg[1]
     os.mkdir(self.tempdir)
     print("Files generated at {}".format(self.tempdir))
     self.runs_per_min = in_runs_per_min
     self.run_end_typ = in_run_end_typ
     tmplt_vals = tmo.TemplateDef.objects.filter(
-      vndr_nm='Oracle', prdct_typ='DB', prdct_nm='Oracle', prdct_ver='19', nm='rebuild_index_offline').values()
+      vndr_nm=in_tmplt["vendor"], prdct_typ=in_tmplt["product_type"], prdct_nm=in_tmplt["product"], prdct_ver=in_tmplt["version"], nm=in_tmplt["template"]).values()
     # tmplt_vals = tmo.TemplateDef.objects.filter(
     #   vndr_nm='Oracle', prdct_typ='DB', prdct_nm='Oracle', prdct_ver='19', nm='timeout').values()
     if len(tmplt_vals) > 0:
-      self.run_tmplt = Template(tmplt_vals[0]['text'])
+      self.run_tmplt = Template(
+        '--SQL Executed on {}\n{}\n--\n{}'.format(self.all_arg[2], tmplt_vals[0]['text'], 'EXIT;'))
       for data in in_data:
         t = uuid.uuid4()
         # print(type(data))
@@ -153,10 +161,24 @@ class RunPerMin:
           file1.close()
         curr_ts = datetime.now()
         smo_load = smo.SchedulerLoad(
-          uid=t, prnt_uid=self.all_arg[1], file_pth="{}{}{}.txt".format(self.tempdir, os.path.sep, t), user_data=self.run_tmplt.render(val_context), status="File created", crt_ts=curr_ts, updt_ts=curr_ts)
+          uid=t, prnt_uid=self.all_arg[1], file_pth="{}{}{}.txt".format(self.tempdir, os.path.sep, t), user_data=val_context, status="File created", crt_ts=curr_ts, updt_ts=curr_ts)
         smo_load.save()
-        self.in_list.append("echo {} started && {} && echo {} successful".format(
-          t, self.run_tmplt.render(val_context), t))
+        smo_config = smo.SchedulerConnectConfig.objects.filter(
+          vndr_nm=in_tmplt["vendor"], prdct_typ=in_tmplt["product_type"], prdct_nm=in_tmplt["product"], prdct_ver=in_tmplt["version"]).values()
+        if len(smo_config) > 0:
+          prerun_txt = 'cd {} &&'.format(
+            smo_config[0]['cnnct_dir']) if smo_config[0]['cnnct_dir'] is not None else ''
+          cnnct_cntxt = {'DBID': self.all_arg[2], 'SCRPTFLPTH': "{}{}{}.txt".format(
+            self.tempdir, os.path.sep, t)}
+          cnnct_txt = Template(
+            smo_config[0]["cnnct_strng"]).render(cnnct_cntxt) + ' &&'
+        else:
+          prerun_txt = " "
+          cnnct_txt = " "
+        print("echo {} started && {} {} echo {} successful".format(
+          t, prerun_txt, cnnct_txt, t))
+        self.in_list.append("echo {} started && {} {} echo {} successful".format(
+          t, prerun_txt, cnnct_txt, t))
       pass
     else:
       print('Template not found')
@@ -170,7 +192,6 @@ if __name__ == '__main__':
   # sys.exit()
   updt_process_status.upd_schedule(sys.argv[1], "Running")
   list_data = []
-
   for p in range(0, 10):
     sublist_data = []
     sublist_data.append("schema.index{}".format(p))

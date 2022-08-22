@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Monitor Process{% endblock %}
+{% block content %}
+<h3 class="prcs-header">
+  <table class="table table-striped" border="1">
+    <thead class="table-primary">
+      <tr>
+        <th scope="col">Tag:</th>
+        <th scope="col">{{ tag }}</th>
+        <th scope="col">Parent ID:</th>
+        <th scope="col">{{ prnt_uid }}</th>
+        <th scope="col">Status:</th>
+        <th scope="col">{{ status }}</th>
+      </tr>
+    </thead>
+  </table>
+</h3>
+<br>
+<table class="table table-striped" border="1">
+  <thead class="table-primary">
+    <tr>
+      <th scope="col">Object</th>
+      <th scope="col">Process ID</th>
+      <th scope="col">Status</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  {% for k,v in list.items %}
+  <tr scope="row">
+    <td>{{ v.user_data }}</td>
+    <td>{{ v.pid }}</td>
+    <td>{{ v.status }}</td>
+    <td><button type="button" class="btn btn-primary"
+        onclick='load_files("{{ v.prnt_uid }}", "{{ k }}", "{{ v.status }}")' data-bs-toggle="modal"
+        data-bs-target="#exampleModal">Show Details</button></td>
+  </tr>
+  {% endfor %}
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-header">
+          <h6 class="modal-title">Status</h6>
+        </div>
+        <div id="id_div_stts"></div>
+        <div class="modal-header">
+          <h6 class="modal-title">Generated file content</h6>
+        </div>
+        <div id="id_div_gnrtd_fl"></div>
+        <div class="modal-header">
+          <h6 class="modal-title">Log file content</h6>
+        </div>
+        <div id="id_div_lg_fl"></div>
+        <div class="modal-header">
+          <h6 class="modal-title">Error file content</h6>
+        </div>
+        <div id="id_div_err_fl"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="container">
+    <div id="id_note_display" style="font-size: 90; font-weight: 900;">
+    </div>
+    <br>
+    <div>
+      <textarea id="id_note_txtara">Sa,Re,Ga,Ma,Pa,Dha,Ni,Saa</textarea>
+      <input id="id_note_input" value="1" />
+      <button id="id_note_bttn" type="button" onclick="run_notes()">Play</button>
+    </div>
+  </div>
+  <script type="text/javascript">
+    let splittedText = [];
+    let timeVal = 1;
+    function log(i) {
+      // console.log(a[i]);
+      if (i < splittedText.length) {
+        setTimeout(function () {
+          document.querySelector('#id_note_display').innerHTML = splittedText[i];
+          i++;
+          log(i);
+        }, timeVal * 1000);
+      }
+    }
+    function run_notes() {
+      splittedText = document.querySelector("#id_note_txtara").value.split(",");
+      timeVal = parseFloat(document.querySelector("#id_note_input").value);
+      log(0);
+      // console.log(timeVal);
+      // for (var i = 0; i < splittedText.length; i++) {
+      //   (function (i) {
+      //     setTimeout(function () {
+      //       document.querySelector('#id_note_display').innerHTML += splittedText[i];
+      //       console.log(splittedText[i]);
+      //       console.log(new Date());
+      //     }, i * parseInt(timeVal) * 1000);
+      //   })(i);
+      // };
+    }
+  </script>
+</body>
+
+</html>
