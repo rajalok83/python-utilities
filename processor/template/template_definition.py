@@ -36,4 +36,4 @@ class TemplateDefinition:
 if __name__ == '__main__':
   t_def = TemplateDefinition()
   t_def.create_template_def('Oracle', 'DB', 'Oracle', '19',
-                            'rebuild_index_offline', 'REBUILD INDEX {{ var0 }} OFFLINE;')
+                            'rebuild_index_online', 'ALTER INDEX {{ var0 }} REBUILD NOPARALLEL ONLINE;')
