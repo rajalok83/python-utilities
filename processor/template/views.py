@@ -1,9 +1,10 @@
+from copyreg import constructor
 from datetime import datetime
 import traceback
 from django.shortcuts import render
 from . import template_definition
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from . import models as tmo
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import json
@@ -40,6 +41,19 @@ def update_template(request, id):
     except:
       traceback.print_exc()
       return HttpResponse("Update template failed!!!")
+  else:
+    return get_all_tmplts(request)
+
+
+def get_template(request, id):
+  if request.method == "GET":
+    try:
+      t_def = tmo.TemplateDef.objects.filter(id=id).values()
+      return JsonResponse(t_def[0])
+    except:
+      traceback.print_exc()
+      # return HttpResponse("Get template failed!!!")
+      return JsonResponse({})
   else:
     return get_all_tmplts(request)
 
