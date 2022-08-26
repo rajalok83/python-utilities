@@ -2,7 +2,7 @@
 {% block title %}Connect Configuration{% endblock %}
 {% block content %}
 
-<h3 class="prcs-header">
+<!-- <h3 class="prcs-header">
   <table class="table table-striped" border="1">
     <thead class="table-primary">
       <tr>
@@ -10,7 +10,7 @@
       </tr>
     </thead>
   </table>
-</h3>
+</h3> -->
 <table class="table table-striped" border="1">
   <thead class="table-primary">
     <tr>
@@ -34,17 +34,34 @@
     <td>{{ v.cnnct_dir }}</td>
     <td>{{ v.cnnct_strng }}</td>
     <td>
-      <button type="button" class="btn btn-success" onclick='edit_connect_config("{{ k }}", "{{ v.vndr_nm }}",
+      <nav class="navbar navbar-expand-sm subcollapsible">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapsibleNavbar{{ k }}">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="collapsibleNavbar{{ k }}">
+            <ul class="navbar-nav">
+              <!-- <li class="nav-item">
+                <button type="button" class="btn btn-success" onclick='edit_connect_config("{{ k }}", "{{ v.vndr_nm }}",
+                    "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.cnnct_dir }}", "{{ v.cnnct_strng }}")'
+                  data-bs-toggle="modal" data-bs-target="#editConnectConfigModal"><i class="fa-solid fa-play"></i></button>
+              </li> -->
+              <li class="nav-item">
+                <button type="button" class="btn btn-warning" onclick='edit_connect_config("{{ k }}", "{{ v.vndr_nm }}",
            "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.cnnct_dir }}", "{{ v.cnnct_strng }}")'
-        data-bs-toggle="modal" data-bs-target="#editConnectConfigModal"><i class="fa-solid fa-play"></i></button>
-      <button type="button" class="btn btn-warning" onclick='edit_connect_config("{{ k }}", "{{ v.vndr_nm }}",
-           "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.cnnct_dir }}", "{{ v.cnnct_strng }}")'
-        data-bs-toggle="modal" data-bs-target="#editConnectConfigModal"><i
-          class="fa-solid fa-pen-to-square"></i></button>
-      <button type="button" class="btn btn-danger"
-        onclick='delete_connect_config("{{ k }}","{{ v.vndr_nm }} > {{ v.prdct_typ }} > {{ v.prdct_nm }} > {{ v.prdct_ver }}" )'
-        data-bs-toggle="modal" data-bs-target="#confirmConnectConfigModal"><i
-          class="fa-solid fa-trash-can"></i></button>
+                  data-bs-toggle="modal" data-bs-target="#editConnectConfigModal"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+              </li>
+              <li class="nav-item">
+                <button type="button" class="btn btn-danger"
+                  onclick='delete_connect_config("{{ k }}","{{ v.vndr_nm }} > {{ v.prdct_typ }} > {{ v.prdct_nm }} > {{ v.prdct_ver }}" )'
+                  data-bs-toggle="modal" data-bs-target="#confirmConnectConfigModal"><i
+                    class="fa-solid fa-trash-can"></i></button>
+              </li>
+            </ul>
+          </div>
+        </div>
     </td>
   </tr>
   {% endfor %}
@@ -62,18 +79,18 @@
       <div class="modal-body">
         <form class="form">
           {% csrf_token %}
-          <input class="form-control" id="id_input_id" style="display:none" />
-          <label for="id_input_vndr_nm">Vendor Name</label>
-          <input class="form-control" id="id_input_vndr_nm" required />
-          <label for="id_input_prdct_typ">Product Type</label>
-          <input class="form-control" id="id_input_prdct_typ" required />
-          <label for="id_input_prdct_nm">Product Name</label>
-          <input type="text" class="form-control" id="id_input_prdct_nm" required />
-          <label for="id_input_prdct_vrsn">Product Version</label>
-          <input class="form-control" id="id_input_prdct_vrsn" required />
-          <label for="id_input_cnnct_dir">Connect Directory</label>
+          <input class="form-control" id="id_input_cnnct_id" style="display:none" hidden />
+          <label for="id_input_cnnct_vndr_nm" class="form-label">Vendor Name</label>
+          <input class="form-control" id="id_input_cnnct_vndr_nm" required />
+          <label for="id_input_cnnct_prdct_typ" class="form-label">Product Type</label>
+          <input class="form-control" id="id_input_cnnct_prdct_typ" required />
+          <label for="id_input_cnnct_prdct_nm" class="form-label">Product Name</label>
+          <input type="text" class="form-control" id="id_input_cnnct_prdct_nm" required />
+          <label for="id_input_cnnct_prdct_vrsn" class="form-label">Product Version</label>
+          <input class="form-control" id="id_input_cnnct_prdct_vrsn" required />
+          <label for="id_input_cnnct_dir" class="form-label">Connect Directory</label>
           <input class="form-control" id="id_input_cnnct_dir" required />
-          <label for="id_input_cnnct_strng">Connect String</label>
+          <label for="id_input_cnnct_strng" class="form-label">Connect String</label>
           <input class="form-control" id="id_input_cnnct_strng" required />
         </form>
       </div>

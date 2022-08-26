@@ -2,7 +2,7 @@
 {% block title %}Template Definition{% endblock %}
 {% block content %}
 
-<h3 class="prcs-header">
+<!-- <h3 class="prcs-header">
   <table class="table table-striped" border="1">
     <thead class="table-primary">
       <tr>
@@ -10,7 +10,7 @@
       </tr>
     </thead>
   </table>
-</h3>
+</h3> -->
 <table class="table table-striped" border="1">
   <thead class="table-primary">
     <tr>
@@ -34,14 +34,34 @@
     <td>{{ v.prdct_ver }}</td>
     <td>{{ v.text }}</td>
     <td>
-      <button type="button" class="btn btn-success" onclick='edit_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
-           "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")' data-bs-toggle="modal"
-        data-bs-target="#editTemplateModal"><i class="fa-solid fa-play"></i></button>
-      <button type="button" class="btn btn-warning" onclick='edit_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
-     "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")' data-bs-toggle="modal"
-        data-bs-target="#editTemplateModal"><i class="fa-solid fa-pen-to-square"></i></button>
-      <button type="button" class="btn btn-danger" onclick='delete_template("{{ k }}", "{{ v.nm }}")'
-        data-bs-toggle="modal" data-bs-target="#confirmTemplateModal"><i class="fa-solid fa-trash-can"></i></button>
+      <nav class="navbar navbar-expand-sm subcollapsible">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapsibleNavbar{{ k }}">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="collapsibleNavbar{{ k }}">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <button type="button" class="btn btn-success" onclick='run_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
+                           "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")'
+                  data-bs-toggle="modal" data-bs-target="#editTemplateModal"><i class="fa-solid fa-play"></i></button>
+              </li>
+              <li class="nav-item">
+                <button type="button" class="btn btn-warning" onclick='edit_template("{{ k }}", "{{ v.nm }}", "{{ v.vndr_nm }}",
+                          "{{ v.prdct_typ }}", "{{ v.prdct_nm }}", "{{ v.prdct_ver }}", "{{ v.text }}")'
+                  data-bs-toggle="modal" data-bs-target="#editTemplateModal"><i
+                    class="fa-solid fa-pen-to-square"></i></button>
+              </li>
+              <li class="nav-item">
+                <button type="button" class="btn btn-danger" onclick='delete_template("{{ k }}", "{{ v.nm }}")'
+                  data-bs-toggle="modal" data-bs-target="#confirmTemplateModal"><i
+                    class="fa-solid fa-trash-can"></i></button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
     </td>
   </tr>
   {% endfor %}
@@ -57,21 +77,38 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form class="form">
+        <form class="form" id="id_form" enctype="multipart/form-data">
           {% csrf_token %}
-          <input class="form-control" id="id_input_id" style="display:none" />
-          <label for="id_input_nm">Template Name</label>
-          <input class="form-control" id="id_input_nm" required />
-          <label for="id_input_vndr_nm">Vendor Name</label>
-          <input class="form-control" id="id_input_vndr_nm" required />
-          <label for="id_input_prdct_typ">Product Type</label>
-          <input class="form-control" id="id_input_prdct_typ" required />
-          <label for="id_input_prdct_nm">Product Name</label>
-          <input type="text" class="form-control" id="id_input_prdct_nm" required />
-          <label for="id_input_prdct_vrsn">Product Version</label>
-          <input class="form-control" id="id_input_prdct_vrsn" required />
-          <label for="id_textarea_tmplt_txt">Template Text</label>
-          <textarea class="form-control" id="id_textarea_tmplt_txt" required></textarea>
+          <div id="id_div_form">
+            <input class="form-control" id="id_input_tmplt_id" style="display:none" hidden />
+            <label for="id_input_tmplt_nm" class="form-label">Template Name</label>
+            <input class="form-control" id="id_input_tmplt_nm" required />
+            <label for="id_input_tmplt_vndr_nm" class="form-label">Vendor Name</label>
+            <input class="form-control" id="id_input_tmplt_vndr_nm" required />
+            <label for="id_input_tmplt_prdct_typ" class="form-label">Product Type</label>
+            <input class="form-control" id="id_input_tmplt_prdct_typ" required />
+            <label for="id_input_tmplt_prdct_nm" class="form-label">Product Name</label>
+            <input type="text" class="form-control" id="id_input_tmplt_prdct_nm" required />
+            <label for="id_input_tmplt_prdct_vrsn" class="form-label">Product Version</label>
+            <input class="form-control" id="id_input_tmplt_prdct_vrsn" required />
+            <label for="id_textarea_tmplt_txt" class="form-label">Template Text</label>
+            <textarea class="form-control" id="id_textarea_tmplt_txt" required></textarea>
+            <input class="form-control run-config" id="id_input_cnnct_id" hidden />
+            <label for="id_input_cnnct_dir" class="form-label run-config">Connect Dir</label>
+            <input class="form-control run-config" id="id_input_cnnct_dir" required />
+            <label for="id_input_cnnct_strng" class="form-label run-config">Connect String</label>
+            <input class="form-control run-config" id="id_input_cnnct_strng" required />
+          </div>
+          <div class="mb-3">
+            <label for="id_input_run_tag" class="form-label run-config run-config-data">Tag Execution</label>
+            <input class="form-control run-config run-config-data" id="id_input_run_tag" name="id_input_run_tag"
+              required />
+          </div>
+          <div class="mb-3">
+            <label for="id_input_run_data" class="form-label run-config run-config-data">Data File</label>
+            <input class="form-control run-config run-config-data" accept=".xlsx,.csv,.json" type="file"
+              id="id_input_run_data" name="id_input_run_data" required />
+          </div>
         </form>
       </div>
       <div class="modal-footer">

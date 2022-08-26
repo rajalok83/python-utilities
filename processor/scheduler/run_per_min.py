@@ -21,6 +21,7 @@ from scheduler import models as smo
 
 class RunPerMin:
   all_arg = []
+  in_type = None
   run_end_typ = None
   runs_per_min = 1
   session_typ = None
@@ -50,7 +51,7 @@ class RunPerMin:
               print('CPROC:Error->{}->{}'.format(cproc.pid, str(line.rstrip())))
       except psutil.NoSuchProcess:
         proc_uid = proc.args.split(' ')[1]
-        print(proc_uid)
+        # print(proc_uid)
         self.updt_proc_status(proc_uid, 'N/A', 'Completed')
         self.all_active_proc.remove(proc)
         out_file = '{}{}{}'.format(self.tempdir, os.path.sep, proc_uid)
@@ -127,33 +128,37 @@ class RunPerMin:
       else:
         return
 
-  def __init__(self, in_argv, in_run_end_typ, in_runs_per_min, in_data) -> None:
+  def __init__(self, in_argv, in_run_end_typ, in_runs_per_min, in_data, in_type) -> None:
     # smo.SchedulerLoad.objects.all().delete()
     self.all_arg = in_argv
     print(self.all_arg)
-    in_tmplt = json.loads(self.all_arg[3])
+    in_tmplt = json.loads(self.all_arg[2])
     self.tempdir = self.tempdir + os.path.sep + self.all_arg[1]
-    os.mkdir(self.tempdir)
+    if not os.path.exists(self.tempdir):
+      os.mkdir(self.tempdir)
     print("Files generated at {}".format(self.tempdir))
     self.runs_per_min = in_runs_per_min
     self.run_end_typ = in_run_end_typ
     tmplt_vals = tmo.TemplateDef.objects.filter(
-      vndr_nm=in_tmplt["vendor"], prdct_typ=in_tmplt["product_type"], prdct_nm=in_tmplt["product"], prdct_ver=in_tmplt["version"], nm=in_tmplt["template"]).values()
+      id=in_tmplt["tmplt_id"]).values()
     # tmplt_vals = tmo.TemplateDef.objects.filter(
     #   vndr_nm='Oracle', prdct_typ='DB', prdct_nm='Oracle', prdct_ver='19', nm='timeout').values()
     if len(tmplt_vals) > 0:
       self.run_tmplt = Template(
-        '--SQL Executed on {}\n{}\n--\n{}'.format(self.all_arg[2], tmplt_vals[0]['text'], 'EXIT;'))
-      for data in in_data:
+        '{}\n--\n{}'.format(tmplt_vals[0]['text'], 'EXIT;'))
+      for in_data_val in in_data:
         t = uuid.uuid4()
         # print(type(data))
         # sys.exit()
         val_context = {}
+        if in_type == "csv":
+          data = in_data_val.split(",")
+          # print(data)
         if type(data) == str:
-          val_context["var0"] = data
+          val_context["var1"] = data
         elif type(data) == list:
           val_context = {"var{}".format(
-            idx): data[idx] for idx in range(0, len(data))}
+            idx): data[idx].split("\n")[0] for idx in range(1, len(data))}
         # print(val_context)
         with open("{}{}{}.txt".format(self.tempdir, os.path.sep, t), "w") as file1:
           # Writing data to a file
@@ -164,12 +169,13 @@ class RunPerMin:
           uid=t, prnt_uid=self.all_arg[1], file_pth="{}{}{}.txt".format(self.tempdir, os.path.sep, t), user_data=val_context, status="File created", crt_ts=curr_ts, updt_ts=curr_ts)
         smo_load.save()
         smo_config = smo.SchedulerConnectConfig.objects.filter(
-          vndr_nm=in_tmplt["vendor"], prdct_typ=in_tmplt["product_type"], prdct_nm=in_tmplt["product"], prdct_ver=in_tmplt["version"]).values()
+          id=in_tmplt["cnnct_id"]).values()
+        cnnct_cntxt = in_tmplt["cnnct_cntxt"]
         if len(smo_config) > 0:
           prerun_txt = 'cd {} &&'.format(
             smo_config[0]['cnnct_dir']) if smo_config[0]['cnnct_dir'] is not None else ''
-          cnnct_cntxt = {'DBID': self.all_arg[2], 'SCRPTFLPTH': "{}{}{}.txt".format(
-            self.tempdir, os.path.sep, t)}
+          cnnct_cntxt['SCRPTFLPTH'] = "{}{}{}.txt".format(
+            self.tempdir, os.path.sep, t)
           cnnct_txt = Template(
             smo_config[0]["cnnct_strng"]).render(cnnct_cntxt) + ' &&'
         else:
@@ -198,8 +204,17 @@ if __name__ == '__main__':
     sublist_data.append("schema.index{} part2".format(p))
     list_data.append(sublist_data)
     # list_data.append("schema.index{}".format(p))
-  rem = RunPerMin(sys.argv, 'till-list-completes', 10, list_data)
-  # sys.exit()
-  rem.run_every_n_sec()
-  rem.get_process_status()
-  updt_process_status.upd_schedule(sys.argv[1], "Completed")
+  print(json.loads(sys.argv[2])["in_file"])
+  # sys.exit(0)
+  try:
+    with open(json.loads(sys.argv[2])["in_file"], 'r') as in_file:
+      list_data = in_file.readlines()
+      in_file.close()
+    rem = RunPerMin(sys.argv, 'till-list-completes', 10, list_data,
+                    json.loads(sys.argv[2])["in_file"].split(".")[-1])
+    # sys.exit()
+    rem.run_every_n_sec()
+    rem.get_process_status()
+    updt_process_status.upd_schedule(sys.argv[1], "Completed")
+  except:
+    updt_process_status.upd_schedule(sys.argv[1], "Failed")

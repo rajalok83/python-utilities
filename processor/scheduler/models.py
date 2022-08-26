@@ -20,7 +20,10 @@ class SchedulerConnectConfig(models.Model):
 class SchedulerProcess(models.Model):
   pid = models.BigIntegerField(unique=True)
   uid = models.CharField(max_length=80, primary_key=True)
+  cnnct_id = models.BigIntegerField(default=-9999)
+  tmplt_id = models.BigIntegerField(default=-9999)
   tag = models.CharField(max_length=80, unique=True, default='')
+  cnnct_cntxt = models.CharField(max_length=32000, default='')
   status = models.CharField(max_length=80, default='')
   crt_ts = models.DateTimeField('date created', default=datetime.now())
   updt_ts = models.DateTimeField('date updated', default=datetime.now())

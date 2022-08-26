@@ -3,20 +3,22 @@ import json
 import os
 from tempfile import gettempdir
 import traceback
+from unicodedata import name
 import uuid
 from django.shortcuts import render
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from subprocess import Popen as po
 import psutil
 from . import models as smo
 from . import updt_process_status
 from . import scheduler_config
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.core.files.storage import FileSystemStorage
 
 
-def schedule(request):
+def schedule_dummy(request):
   # models.SchedulerProcess.objects.all().delete()
   if request.method == 'POST':
     uid = request.POST.get('uid')
@@ -85,7 +87,86 @@ def schedule(request):
     # return HttpResponse("This process is scheduled with status {} with process id: {}".format(sub_txt, scheduler_pid))
 
 
-def get_schedule(request, uid):
+@csrf_exempt
+def schedule(request):
+  # models.SchedulerProcess.objects.all().delete()
+  if request.method == 'POST':
+    t = uuid.uuid4()
+    tmplt_opt = {}
+    cnnct_cntxt = {}
+    for k, v in request.POST.items():
+      if str(k).__contains__("id_input_"):
+        cnnct_cntxt[str(k).split("id_input_")[1].upper()] = v
+      else:
+        tmplt_opt[k] = v
+    tmplt_opt["cnnct_cntxt"] = cnnct_cntxt
+    print(tmplt_opt)
+    for file in request.FILES:
+      print(file)
+    file = request.FILES.get('id_input_run_data', None)
+    if file is None:
+      return JsonResponse({"status": "failed", "text": "No input data passed"})
+    if(file.name.split(".")[-1] in ("csv", "json", "sql", "xlsx")):
+      os.mkdir("{}{}{}".format(gettempdir(), os.path.sep, str(t)))
+      fs = FileSystemStorage(location="{}{}{}".format(
+        gettempdir(), os.path.sep, str(t)))
+      filename = fs.save(file.name, file)
+      tmplt_opt["in_file"] = "{}{}{}{}{}".format(
+        gettempdir(), os.path.sep, str(t), os.path.sep, file.name)
+      tag = tmplt_opt["cnnct_cntxt"]["RUN_TAG"]
+      sub_txt = "Running"
+      print("Count:{}".format(
+        str(smo.SchedulerProcess.objects.filter(tag=tag).count())))
+      try:
+        if smo.SchedulerProcess.objects.filter(tag=tag).count() == 0:
+          sub_txt = "Started"
+          print(sub_txt)
+          print("{} ./scheduler/run_per_min.py {} {}".format((os.environ["VIRTUAL_ENV"] + '/Scripts/' if os.environ["VIRTUAL_ENV"] is not None else '') + 'python', t,
+                                                             json.dumps(json.dumps(tmplt_opt))))
+          proc = po("{} ./scheduler/run_per_min.py {} {}".format((os.environ["VIRTUAL_ENV"] + '/Scripts/' if os.environ["VIRTUAL_ENV"] is not None else '') + 'python', t,
+                    json.dumps(json.dumps(tmplt_opt))))
+          scheduler_pid = proc.pid
+          print(tmplt_opt["cnnct_id"] + " " + tmplt_opt["tmplt_id"])
+          updt_process_status.add_schedule(
+            scheduler_pid, t, tag, int(tmplt_opt["cnnct_id"]), int(tmplt_opt["tmplt_id"]), tmplt_opt["cnnct_cntxt"], sub_txt)
+        else:
+          smp = smo.SchedulerProcess.objects.filter(tag=tag)[0]
+          scheduler_pid = smp.pid
+          t = smp.uid
+          try:
+            psutil.Process(scheduler_pid)
+          except psutil.NoSuchProcess:
+            sub_txt = "Completed"
+            print(sub_txt)
+        entry = {}
+        entry["pid"] = t
+        entry["status"] = sub_txt
+        return JsonResponse({"status": sub_txt, "text": entry})
+      except:
+        entry = {}
+        entry["pid"] = t
+        entry["status"] = "Failed"
+        updt_process_status.upd_schedule(t, "Failed")
+        return JsonResponse({"status": "Failed", "text": entry})
+    else:
+      return JsonResponse({"status": "failed", "text": "File type inappropriate"})
+
+
+def get_all_executions(request):
+  smp = smo.SchedulerProcess.objects.all().order_by("-crt_ts").values()
+  out_load = {l["uid"]: l for l in smp}
+  # print(out_load)
+  return render(request, "executions.html", context={"list": out_load})
+
+
+@csrf_exempt
+def delete_execution(request, uid):
+  sml = smo.SchedulerLoad.objects.filter(prnt_uid=uid).delete()
+  smp = smo.SchedulerProcess.objects.filter(uid=uid).delete()
+  return get_all_executions()
+
+
+def get_execution(request, uid):
   sml = smo.SchedulerLoad.objects.filter(prnt_uid=uid).values()
   smp = smo.SchedulerProcess.objects.filter(uid=uid).values()
   out_load = {l["uid"]: l for l in sml}
@@ -111,9 +192,17 @@ def create_connect_config(request):
     try:
       in_body = json.loads(request.body.decode('utf-8'))
       print(in_body)
-      t_def = scheduler_config.SchedulerConfiguration()
-      t_def.create_scheduler_config(
-        in_body["vndr_nm"], in_body["prdct_typ"], in_body["prdct_nm"], in_body["prdct_vrsn"], in_body["cnnct_dir"], in_body["cnnct_strng"])
+      curr_ts = datetime.now()
+      t = smo.SchedulerConnectConfig(
+        vndr_nm=in_body["vndr_nm"],
+        prdct_typ=in_body["prdct_typ"],
+        prdct_nm=in_body["prdct_nm"],
+        prdct_ver=in_body["prdct_vrsn"],
+        cnnct_dir=in_body["cnnct_dir"],
+        cnnct_strng=in_body["cnnct_strng"],
+        crt_ts=curr_ts,
+        updt_ts=curr_ts)
+      t.save()
       return HttpResponse("Create connect configuration successful!!!")
     except:
       traceback.print_exc()
@@ -127,8 +216,30 @@ def get_all_connect_config(request):
     all_config = smo.SchedulerConnectConfig.objects.all().values()
     # print(all_tmplt)
     out_load = {l["id"]: l for l in all_config}
-    print(out_load)
+    # print(out_load)
     return render(request, "connect.html", context={"list": out_load})
+
+
+def get_connect_config_by_id(request, id):
+  if request.method == "GET":
+    try:
+      all_config = smo.SchedulerConnectConfig.objects.filter(id=id).values()[0]
+      # print(all_tmplt)
+      return JsonResponse(all_config)
+    except:
+      return JsonResponse({})
+
+
+def get_connect_config(request):
+  if request.method == "GET":
+    all_config = smo.SchedulerConnectConfig.objects.filter(vndr_nm=request.GET.get("vndr_nm"),
+                                                           prdct_typ=request.GET.get(
+                                                             "prdct_typ"),
+                                                           prdct_nm=request.GET.get(
+                                                             "prdct_nm"),
+                                                           prdct_ver=request.GET.get("prdct_vrsn")).values()[0]
+    # print(all_tmplt)
+    return JsonResponse(all_config)
 
 
 @csrf_exempt
@@ -159,7 +270,6 @@ def update_connect_config(request, id):
       t_def.cnnct_strng = in_body["cnnct_strng"]
       t_def.updt_ts = datetime.now()
       t_def.save()
-      print()
       return HttpResponse("Update connect config successful!!!")
     except:
       traceback.print_exc()

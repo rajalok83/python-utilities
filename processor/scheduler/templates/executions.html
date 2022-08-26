@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Executions{% endblock %}
+{% block content %}
+
+<!-- <h3 class="prcs-header">
+  <table class="table table-striped" border="1">
+    <thead class="table-primary">
+      <tr>
+        <th scope="col">Connect Configuration</th>
+      </tr>
+    </thead>
+  </table>
+</h3> -->
+<table class="table table-striped" border="1">
+  <thead class="table-primary">
+    <tr>
+      <th scope="col">Execution ID</th>
+      <th scope="col">Tag</th>
+      <th scope="col">Template ID</th>
+      <th scope="col">Connect ID</th>
+      <th scope="col">Connect Context</th>
+      <th scope="col">Start TS</th>
+      <th scope="col">Update TS</th>
+      <th scope="col">Status</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  {% for k,v in list.items %}
+  <tr scope="row">
+    <td><a href="{{request.scheme}}://{{request.get_host}}/scheduler/execution/{{ v.uid }}">{{ v.uid }}</a></td>
+    <td><a href="{{request.scheme}}://{{request.get_host}}/scheduler/execution/{{ v.uid }}">{{ v.tag }}</a></td>
+    <td>
+      <button type="button" class="btn btn-link" onclick='show_template("{{ v.tmplt_id }}")' data-bs-toggle="modal"
+        data-bs-target="#editTemplateModal">{{ v.tmplt_id }}<i class="fa-solid fa-eye"></i></button>
+    </td>
+    <td>
+      <button type="button" class="btn btn-link" onclick='show_cnnct_config("{{ v.cnnct_id }}")' data-bs-toggle="modal"
+        data-bs-target="#editConnectConfigModal">{{ v.cnnct_id }}<i class="fa-solid fa-eye"></i></button>
+    </td>
+    <td>{{ v.cnnct_cntxt }}</td>
+    <td>{{ v.crt_ts }}</td>
+    <td>{{ v.updt_ts }}</td>
+    <td>{{ v.status }}</td>
+    <td>
+      <nav class="navbar navbar-expand-sm subcollapsible">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapsibleNavbar{{ k }}">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="collapsibleNavbar{{ k }}">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <button type="button" class="btn btn-danger" onclick=' delete_execution("{{ k }}", "{{ v.tag }}" )'
+                  data-bs-toggle="modal" data-bs-target="#confirmExecutionModal"><i
+                    class="fa-solid fa-trash-can"></i></button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="editTemplateModal" tabindex="-1" aria-labelledby="editTemplateModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTemplateModalLabel">Edit Template</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form" id="id_form" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div id="id_div_form">
+            <input class="form-control" id="id_input_tmplt_id" style="display:none" hidden />
+            <label for="id_input_tmplt_nm" class="form-label">Template Name</label>
+            <input class="form-control" id="id_input_tmplt_nm" required disabled="disabled" />
+            <label for="id_input_tmplt_vndr_nm" class="form-label">Vendor Name</label>
+            <input class="form-control" id="id_input_tmplt_vndr_nm" required disabled="disabled" />
+            <label for="id_input_tmplt_prdct_typ" class="form-label">Product Type</label>
+            <input class="form-control" id="id_input_tmplt_prdct_typ" required disabled="disabled" />
+            <label for="id_input_tmplt_prdct_nm" class="form-label">Product Name</label>
+            <input type="text" class="form-control" id="id_input_tmplt_prdct_nm" required disabled="disabled" />
+            <label for="id_input_tmplt_prdct_vrsn" class="form-label">Product Version</label>
+            <input class="form-control" id="id_input_tmplt_prdct_vrsn" required disabled="disabled" />
+            <label for="id_textarea_tmplt_txt" class="form-label">Template Text</label>
+            <textarea class="form-control" id="id_textarea_tmplt_txt" required disabled="disabled"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="editConnectConfigModal" tabindex="-1" aria-labelledby="editConnectConfigModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editConnectConfigModalLabel">Edit Connect Configuration</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form">
+          {% csrf_token %}
+          <input class="form-control" id="id_input_cnnct_id" style="display:none" hidden disabled="disabled" />
+          <label for="id_input_cnnct_vndr_nm" class="form-label">Vendor Name</label>
+          <input class="form-control" id="id_input_cnnct_vndr_nm" required disabled="disabled" />
+          <label for="id_input_cnnct_prdct_typ" class="form-label">Product Type</label>
+          <input class="form-control" id="id_input_cnnct_prdct_typ" required disabled="disabled" />
+          <label for="id_input_cnnct_prdct_nm" class="form-label">Product Name</label>
+          <input type="text" class="form-control" id="id_input_cnnct_prdct_nm" required disabled="disabled" />
+          <label for="id_input_cnnct_prdct_vrsn" class="form-label">Product Version</label>
+          <input class="form-control" id="id_input_cnnct_prdct_vrsn" required disabled="disabled" />
+          <label for="id_input_cnnct_dir" class="form-label">Connect Directory</label>
+          <input class="form-control" id="id_input_cnnct_dir" required disabled="disabled" />
+          <label for="id_input_cnnct_strng" class="form-label">Connect String</label>
+          <input class="form-control" id="id_input_cnnct_strng" required disabled="disabled" />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="confirmExecutionModal" tabindex="-1" aria-labelledby="confirmExecutionModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmExecutionModalLabel">Confirm Execution Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form">
+          {% csrf_token %}
+          <input class="form-control" id="id_confirm_input_id" style="display:none" />
+          <label for="id_confirm_input_nm">Execution Name</label>
+          <input class="form-control" id="id_confirm_input_nm" required readonly />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" id="id_confirm_button_save" class="btn btn-primary">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
