@@ -1,0 +1,94 @@
+{
+    "setv": {
+        "dbeaver_home": "dbeaver_home",
+        "psql_home": "psql_home",
+        "ssl": true,
+        "sslmode": "require"
+    },
+    "syntax": {
+        "roles-login": "aws login -t \"arn:aws:iam::%account_key%:role/%seal_key%-%role-sfx_key%\"",
+        "db-pwd-fetch": "FOR /F %i IN ('aws rds generate-db-auth-token --host %cluster-host_key% --port %port_key% --region %region_key% --username %db_key%%sfx_key%') DO set \"pwd=%i\"",
+        "dbeaver-connect": "%dbeaver_home_key%\\dbeaver.exe -con \"name=%db_key%|type=%env_key%|driver=PostgreSQL|prop.ssl=%ssl_key%|prop.sslmode=%sslmode_key%|prop.sslfactory=org.postgresql.ssl.jdbc4.LibPQFactory|host=%cluster-nlb_key%|port=%port_key%|database=%db_key%|user=%db_key%%sfx_key%|password=%pwd%\"",
+        "psql-connect": "%psql_home_key%\\psql.exe \"host=%cluster-nlb_key% port=%port_key% sslmode=%sslmode_key% dbname=%db_key% user=%db_key%%sfx_key% password=%pwd%\""
+    },
+    "tools": {
+        "psql": "psql",
+        "dbeaver": "dbeaver"
+    },
+    "role": {
+        "app-rw": {
+            "sfx": "AuroraReadWrite",
+            "role-sfx": "aurora-app-rw"
+        },
+        "app-ro": {
+            "sfx": "AuroraRead",
+            "role-sfx": "aurora-app-ro"
+        }
+    },
+    "seal": {
+        "123": {
+            "env": {
+                "dev": {
+                    "db": {
+                        "devdb": {
+                            "account": "account_id",
+                            "port": "port_id",
+                            "cluster-host": "cluster_host",
+                            "cluster-nlb": "cluster_nlb",
+                            "region": "region"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "flow": {
+        "start": "list_seal",
+        "list_seal": {
+            "X": "Exit",
+            "action": [
+                "set_seal_key",
+                "list_seal_key_env"
+            ]
+        },
+        "list_seal_key_env": {
+            "B": "list_seal",
+            "X": "Exit",
+            "action": [
+                "set_env_key",
+                "list_seal_key_env_key_db"
+            ]
+        },
+        "list_seal_key_env_key_db": {
+            "B": "list_seal_key_env",
+            "X": "Exit",
+            "action": [
+                "set_db_key",
+                "setall_seal_key_env_key_db_key",
+                "list_role"
+            ]
+        },
+        "list_role": {
+            "B": "list_seal_key_env_key_db",
+            "X": "Exit",
+            "action": [
+                "set_role_key",
+                "setall_role_key",
+                "list_tools"
+            ]
+        },
+        "list_tools": {
+            "B": "list_role",
+            "X": "Exit",
+            "action": [
+                "set_tool_key",
+                "run_tool_key"
+            ]
+        },
+        "run_dbeaver": [
+            "roles-login",
+            "db-pwd-fetch",
+            "dbeaver-connect"
+        ]
+    }
+}
